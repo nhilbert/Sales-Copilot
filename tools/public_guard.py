@@ -45,16 +45,22 @@ def main() -> int:
     terms = load_terms()
     if not terms:
         return 0
-    hits = []
+    hits, binaries = [], []
     for name in files("--all" in sys.argv):
         try:
-            text = Path(name).read_text(encoding="utf-8", errors="ignore").lower()
+            data = Path(name).read_bytes()
         except (FileNotFoundError, IsADirectoryError):
             continue
+        if b"\0" in data[:8192]:
+            binaries.append(name)  # images, zips: content cannot be checked as text
+            continue
+        text = data.decode("utf-8", errors="ignore").lower()
         for term in terms:
             pattern = r"(?<![a-z0-9])" + re.escape(term) + r"(?![a-z0-9])"
             if re.search(pattern, text) or re.search(pattern, name.lower()):
                 hits.append((name, term))
+    for name in binaries:
+        print(f"public_guard: binary file not checked, look at it yourself: {name}")
     for name, term in hits:
         print(f"public_guard: private term found in {name} (term #{terms.index(term) + 1} of denylist)")
     if hits:

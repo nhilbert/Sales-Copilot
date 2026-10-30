@@ -54,7 +54,7 @@ Then work the queue with web search, under POLICY rules 6 and 7:
 
 ## Finish
 
-Update `updated:` dates, run the linter if available, commit `debrief: <slug> <meeting> <date>`.
+Update `updated:` dates, append the run log line to `README.md` History (`run: debrief <meeting> <date>`), self-check (CONVENTIONS §14).
 
 ## Output
 

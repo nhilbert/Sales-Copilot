@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- No network access of any kind: everything is inline, data comes only from the folder you open. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>Account Desk Viewer</title>
+<style>
+:root{
+  --bg:#f6f6f4; --panel:#ffffff; --ink:#1d1f21; --muted:#5f6368; --line:#e2e2de; --soft:#efefeb;
+  --accent:#2f5d8a; --accent-soft:#e6eef6;
+  --good:#2e7d4f; --good-soft:#e3f2e8; --warn:#9a6700; --warn-soft:#fbf0d9; --bad:#b3261e; --bad-soft:#fbe6e4;
+  --chip:#f1f1ee; --shadow:0 1px 2px rgba(0,0,0,.06);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#16181b; --panel:#1f2226; --ink:#e7e7e4; --muted:#a3a7ad; --line:#33373c; --soft:#272a2f;
+    --accent:#8fb6dd; --accent-soft:#24344a;
+    --good:#7cc79a; --good-soft:#1f3529; --warn:#e2b75a; --warn-soft:#3a3020; --bad:#f08a80; --bad-soft:#3f2422;
+    --chip:#2a2d32; --shadow:none;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--sans)}
+button,select,input{font:inherit;color:inherit}
+a{color:var(--accent)}
+.app{display:grid;grid-template-columns:250px 1fr;grid-template-rows:auto 1fr;height:100vh}
+header{grid-column:1/-1;display:flex;gap:12px;align-items:center;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+header h1{font-size:15px;margin:0 8px 0 0;font-weight:650;letter-spacing:.01em}
+header .spacer{flex:1}
+header label{color:var(--muted);font-size:12px;display:flex;align-items:center;gap:6px}
+.btn{border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:7px;cursor:pointer}
+.btn:hover{background:var(--soft)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){.btn.primary{color:#0e1620}}
+input[type=date],select,input[type=search]{border:1px solid var(--line);background:var(--panel);border-radius:7px;padding:5px 8px}
+input[type=search]{min-width:200px}
+nav{background:var(--panel);border-right:1px solid var(--line);overflow:auto;padding:12px 0}
+nav h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:14px 16px 6px;font-weight:600}
+nav button{display:block;width:100%;text-align:left;border:0;background:none;padding:7px 16px;cursor:pointer;border-left:3px solid transparent}
+nav button:hover{background:var(--soft)}
+nav button.active{border-left-color:var(--accent);background:var(--accent-soft)}
+nav .sub{display:block;color:var(--muted);font-size:12px}
+main{overflow:auto;padding:20px 24px 60px}
+.banner{background:var(--warn-soft);color:var(--warn);border:1px solid var(--line);padding:6px 12px;border-radius:7px;margin-bottom:12px;font-size:13px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:14px 0 18px;flex-wrap:wrap}
+.tabs button{border:0;background:none;padding:8px 12px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button.active{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+h2.title{margin:0;font-size:20px;font-weight:650}
+.subtitle{color:var(--muted);margin-top:2px}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 10px;font-size:13px;font-weight:650;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.stat .v{font-size:22px;font-weight:650}
+.stat .l{color:var(--muted);font-size:12px}
+.stat.warn .v{color:var(--warn)} .stat.bad .v{color:var(--bad)} .stat.good .v{color:var(--good)}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;background:var(--chip);color:var(--muted);white-space:nowrap}
+.pill.good{background:var(--good-soft);color:var(--good)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.acc{background:var(--accent-soft);color:var(--accent)}
+.idl{font-family:var(--mono);font-size:12px;color:var(--accent);cursor:pointer;text-decoration:none;border-bottom:1px dotted var(--accent)}
+.idl.missing{color:var(--muted);border-bottom-color:var(--muted);cursor:default}
+.muted{color:var(--muted)} .small{font-size:12px} .mono{font-family:var(--mono);font-size:12px}
+ul.plain{list-style:none;margin:0;padding:0}
+ul.plain li{padding:6px 0;border-bottom:1px solid var(--soft)}
+ul.plain li:last-child{border-bottom:0}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--soft);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600;position:sticky;top:0;background:var(--panel)}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--soft)}
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.chipbar{display:flex;gap:6px;flex-wrap:wrap}
+.chipbar button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:2px 10px;font-size:12px;cursor:pointer}
+.chipbar button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+/* stakeholder map */
+.smap{display:grid;grid-template-columns:90px repeat(6,minmax(110px,1fr));gap:4px}
+.smap .hd{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:4px;text-align:center}
+.smap .rh{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:flex-end;padding-right:8px}
+.smap .cell{background:var(--soft);border-radius:8px;min-height:70px;padding:5px;display:flex;flex-direction:column;gap:4px}
+.person{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:6px;padding:4px 6px;cursor:pointer;font-size:12px;line-height:1.3}
+.person.fresh{border-left-color:var(--good)} .person.stale{border-left-color:var(--warn)} .person.never{border-left-color:var(--bad)}
+.person .r{color:var(--muted);font-size:11px}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+/* timeline */
+.tl-month{font-size:12px;font-weight:650;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 6px}
+.tl{border-left:2px solid var(--line);margin-left:6px;padding-left:14px}
+.tl .e{position:relative;padding:6px 0}
+.tl .e::before{content:"";position:absolute;left:-20px;top:12px;width:10px;height:10px;border-radius:50%;background:var(--panel);border:2px solid var(--accent)}
+.tl .e.comm::before{background:var(--accent)}
+.tl .meta{font-size:12px;color:var(--muted)}
+/* drawer */
+.drawer{position:fixed;top:0;right:0;width:min(520px,100vw);height:100vh;background:var(--panel);border-left:1px solid var(--line);box-shadow:-6px 0 18px rgba(0,0,0,.12);transform:translateX(105%);transition:transform .18s ease;z-index:10;display:flex;flex-direction:column}
+.drawer.open{transform:none;visibility:visible}
+.drawer:not(.open){visibility:hidden;transition:transform .18s ease,visibility 0s .18s}
+.nowrap{white-space:nowrap}
+.drawer .dh{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.drawer .db{overflow:auto;padding:14px 16px 40px}
+dl.kv{display:grid;grid-template-columns:130px 1fr;gap:4px 12px;margin:0}
+dl.kv dt{color:var(--muted);font-size:12px} dl.kv dd{margin:0}
+/* markdown */
+.md h1{font-size:19px;margin:0 0 8px} .md h2{font-size:16px;margin:18px 0 6px;border-bottom:1px solid var(--line);padding-bottom:4px} .md h3{font-size:14px;margin:14px 0 4px} .md h4{font-size:13px;margin:12px 0 4px}
+.md pre{background:var(--soft);padding:10px;border-radius:7px;overflow:auto;font-family:var(--mono);font-size:12px}
+.md code{font-family:var(--mono);font-size:12px;background:var(--soft);padding:0 4px;border-radius:4px}
+.md table{margin:8px 0}
+.md blockquote{border-left:3px solid var(--line);margin:8px 0;padding:2px 12px;color:var(--muted)}
+.fm{font-size:12px;background:var(--soft);border-radius:7px;padding:8px 10px;margin-bottom:12px}
+.empty{max-width:640px;margin:40px auto;text-align:left}
+.empty h2{font-size:22px;margin:0 0 8px}
+.empty ol{padding-left:20px}
+.files{display:grid;grid-template-columns:260px 1fr;gap:14px}
+.files ul{list-style:none;padding:0;margin:0}
+.files li button{border:0;background:none;padding:4px 6px;cursor:pointer;text-align:left;width:100%;border-radius:5px;font-family:var(--mono);font-size:12px}
+.files li button:hover,.files li button.active{background:var(--accent-soft)}
+.bar{height:6px;border-radius:3px;background:var(--soft);overflow:hidden}
+.bar>span{display:block;height:100%;background:var(--accent)}
+@media (max-width:820px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto auto 1fr}
+  nav{border-right:0;border-bottom:1px solid var(--line);max-height:180px}
+  main{padding:16px}
+  .files{grid-template-columns:1fr}
+  .smap{grid-template-columns:70px repeat(6,minmax(80px,1fr));overflow:auto}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Account Desk</h1>
+    <button class="btn primary" id="open">Open workspace folder</button>
+    <button class="btn" id="reload" hidden>Reload</button>
+    <input type="file" id="picker" webkitdirectory directory multiple hidden>
+    <span class="muted small" id="srcinfo"></span>
+    <span class="spacer"></span>
+    <input type="search" id="q" placeholder="Search all records and logs">
+    <label>Today <input type="date" id="today"></label>
+    <label>Show <select id="vis">
+      <option value="all">all entries</option>
+      <option value="team">team + crm only</option>
+      <option value="crm">crm only</option>
+    </select></label>
+  </header>
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="dh"><strong id="dtitle"></strong><span class="spacer" style="flex:1"></span><button class="btn" id="dclose">Close</button></div>
+  <div class="db" id="dbody"></div>
+</aside>
+
+<script>
+"use strict";
+/* Account Desk Viewer — read-only explorer for a Sales Copilot workspace.
+   Reads the folder you choose; never writes, never connects to the network. MIT licence. */
+const SC = (() => {
+  const S = {
+    files: new Map(),        // path -> text
+    names: [],               // all paths incl. unread (binary/large)
+    accounts: [], shared: { vp: [], products: [], competitors: [] },
+    today: new Date().toISOString().slice(0, 10),
+    vis: "all", view: { kind: "home" }, tab: "overview", q: "", dir: null, rootName: "",
+    tl: { files: new Set(), person: "" }, actFilter: "open", filePath: ""
+  };
+  const TEXT_EXT = /\.(md|txt|eml|csv|json|ya?ml)$/i;
+  const ID_RE = /\b((?:AVP|DL|RM|[SGQADPN])-[A-Za-z0-9][A-Za-z0-9-]*|E-\d{6}-[a-z0-9-]+)\b/g;
+  const LEASED = new Set(["A", "Q", "N", "DL"]);
+  const EXEMPT = new Set(["done", "dropped", "parked", "answered", "acted", "closed"]);
+  const STANCES = ["blocker", "sceptic", "neutral", "supporter", "champion", "unknown"];
+  const INFL = ["high", "medium", "low", "unknown"];
+  const $ = s => document.querySelector(s);
+
+  /* ---------- DOM helper (always textContent, never raw HTML) ---------- */
+  function h(tag, attrs, ...kids) {
+    const el = document.createElement(tag);
+    if (attrs) for (const [k, v] of Object.entries(attrs)) {
+      if (v == null || v === false) continue;
+      if (k === "class") el.className = v;
+      else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? "" : v);
+    }
+    for (const k of kids.flat(Infinity)) {
+      if (k == null || k === false) continue;
+      el.append(k instanceof Node ? k : document.createTextNode(String(k)));
+    }
+    return el;
+  }
+
+  /* ---------- dates ---------- */
+  const isDate = s => /^\d{4}-\d{2}-\d{2}$/.test(s || "");
+  const days = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5);
+  function ago(d) {
+    if (!isDate(d)) return "unknown";
+    const n = days(d, S.today);
+    if (n === 0) return "today";
+    return n > 0 ? `${n} d ago` : `in ${-n} d`;
+  }
+  function addDays(d, n) { const t = new Date(Date.parse(d) + n * 864e5); return t.toISOString().slice(0, 10); }
+
+  /* ---------- parsing ---------- */
+  function frontMatter(text) {
+    if (!text.startsWith("---\n") && !text.startsWith("---\r\n")) return { fm: {}, body: text };
+    const t = text.replace(/\r\n/g, "\n");
+    const end = t.indexOf("\n---\n", 4);
+    if (end < 0) return { fm: {}, body: t };
+    const fm = {}; let lastKey = null;
+    for (const raw of t.slice(4, end).split("\n")) {
+      if (!raw.trim() || raw.trim().startsWith("#")) continue;
+      const li = raw.match(/^\s+-\s+(.*)$/);
+      if (li && lastKey) { if (!Array.isArray(fm[lastKey])) fm[lastKey] = []; fm[lastKey].push(unq(li[1])); continue; }
+      const m = raw.match(/^([A-Za-z_][\w-]*):\s*(.*)$/);
+      if (!m) continue;
+      lastKey = m[1];
+      let v = m[2].replace(/\s+#.*$/, "").trim();
+      if (v.startsWith("[") && v.endsWith("]")) v = v.slice(1, -1).split(",").map(x => unq(x.trim())).filter(Boolean);
+      else v = unq(v);
+      fm[lastKey] = v === "" ? [] : v;
+    }
+    return { fm, body: t.slice(end + 5) };
+  }
+  const unq = s => s.replace(/^["']|["']$/g, "");
+
+  function parseDoc(path, text) {
+    const { fm, body } = frontMatter(text);
+    const clean = body.replace(/<!--[\s\S]*?-->/g, "");
+    const lines = clean.split("\n");
+    const doc = { path, fm, title: "", sections: {}, records: [], subs: [], logs: [] };
+    let sec = null, sub = null, rec = null;
+    for (const line of lines) {
+      if (/^# /.test(line) && !doc.title) { doc.title = line.slice(2).trim(); continue; }
+      if (/^## /.test(line)) { sec = line.slice(3).trim(); doc.sections[sec] = []; sub = null; rec = null; continue; }
+      if (!sec) continue;
+      doc.sections[sec].push(line);
+      if (/^### /.test(line)) {
+        const m = line.match(/^### ((?:AVP|DL|RM|[SGQADPN])-[A-Za-z0-9-]+) · (.+)$/);
+        if (m && sec === "Current") {
+          rec = { id: m[1], type: m[1].split("-")[0], title: m[2].trim(), keys: {}, file: path, sub: sub && sub.name };
+          doc.records.push(rec);
+        } else { rec = null; sub = { name: line.slice(4).trim(), lines: [], sec }; doc.subs.push(sub); }
+        continue;
+      }
+      if (rec) {
+        const km = line.match(/^- ([a-z_]+): (.*)$/);
+        if (km) { rec.keys[km[1]] = km[2].trim(); continue; }
+        if (line.trim()) (rec.extra = rec.extra || []).push(line);
+        continue;
+      }
+      if (sub) sub.lines.push(line);
+      if (sec === "History") { const e = parseLog(line, path); if (e) doc.logs.push(e); }
+    }
+    return doc;
+  }
+  function parseLog(line, file) {
+    const m = line.match(/^- (\d{4}-\d{2}-\d{2})( \(recorded\))? · (.*)$/);
+    if (!m) return null;
+    let rest = m[3], src = "", vis = "private";
+    const t = rest.match(/\{src: ([^;{}]+); vis: (private|team|crm)\}\s*$/);
+    if (t) { src = t[1].trim(); vis = t[2]; rest = rest.slice(0, t.index).trim(); }
+    return { date: m[1], recorded: !!m[2], parts: rest.split(" · "), text: rest, src, vis, file };
+  }
+
+  /* ---------- model ---------- */
+  function build() {
+    const paths = [...S.files.keys()];
+    const prefix = commonRoot(S.names);
+    S.rootName = prefix.replace(/\/$/, "") || "workspace";
+    const rel = p => p.slice(prefix.length);
+    const byRel = new Map(paths.map(p => [rel(p), S.files.get(p)]));
+    S.rel = byRel;
+    S.relNames = S.names.map(rel);
+    const slugs = [...new Set(S.relNames.map(p => (p.match(/^accounts\/([^/_.][^/]*)\/README\.md$/) || [])[1]).filter(Boolean))].sort();
+    S.accounts = slugs.map(slug => buildAccount(slug, byRel));
+    S.shared.vp = [...byRel].filter(([p]) => /^_shared\/value-propositions\/[^/]+\.md$/.test(p)).map(([p, t]) => ({ path: p, ...frontMatter(t), doc: parseDoc(p, t) }));
+    S.shared.products = [...byRel].filter(([p]) => /^_shared\/products\/[^/]+\.md$/.test(p)).map(([p, t]) => ({ path: p, ...frontMatter(t) }));
+    S.shared.competitors = [...byRel].filter(([p]) => /^_shared\/competitors\/[^/]+\.md$/.test(p)).map(([p, t]) => ({ path: p, ...frontMatter(t) }));
+  }
+  // The workspace root is the folder that contains accounts/ or _shared/.
+  function commonRoot(names) {
+    for (const n of names) { const m = n.match(/^(.*?\/)?(accounts|_shared)\//); if (m) return m[1] || ""; }
+    return "";
+  }
+  function buildAccount(slug, byRel) {
+    const dir = `accounts/${slug}/`;
+    const docs = {};
+    for (const [p, t] of byRel) {
+      if (!p.startsWith(dir)) continue;
+      const r = p.slice(dir.length);
+      if (/^[^/]+\.md$/.test(r) || /^episodes\/[^/]+\.md$/.test(r)) docs[r] = parseDoc(p, t);
+    }
+    const readme = docs["README.md"] || parseDoc(dir + "README.md", "");
+    const records = new Map(); const logs = [];
+    for (const d of Object.values(docs)) { for (const r of d.records) records.set(r.id, r); logs.push(...d.logs); }
+    const comm = (docs["comm-log.md"] || { logs: [] }).logs.map(e => ({ ...e, comm: true, dir: e.parts[0], ch: e.parts[1], who: e.parts[2], summary: e.parts.slice(3).join(" · ") }));
+    const indexed = new Set(((byRel.get(dir + "archive/INDEX.md")) || "").split("\n").map(l => (l.match(/· (.+)$/) || [])[1]).filter(Boolean).map(s => s.trim()));
+    const inbox = S.relNames.filter(p => p.startsWith(dir + "inbox/") && !p.endsWith("/.gitkeep")).map(p => p.slice(dir.length + 6)).filter(n => n && !n.includes("/") && !indexed.has(n));
+    const episodes = Object.entries(docs).filter(([r]) => r.startsWith("episodes/")).map(([, d]) => d);
+    const archivedEpisodes = S.relNames.filter(p => p.startsWith(dir + "archive/episodes/") && p.endsWith(".md"));
+    const reviews = S.relNames.filter(p => p.startsWith(dir + "reviews/") && p.endsWith(".md")).sort().reverse();
+    const fm = readme.fm || {};
+    return {
+      slug, dir, docs, readme, fm, records, logs, comm, inbox, episodes, archivedEpisodes, reviews,
+      name: fm.name || slug, budget: +fm.reminder_budget || 7,
+      window: +fm.coverage_window_days || 45, staleDays: +fm.stale_after_days || 60
+    };
+  }
+
+  /* ---------- visibility & search ---------- */
+  function visible(v) {
+    v = v || "private";
+    if (S.vis === "all") return true;
+    if (S.vis === "team") return v === "team" || v === "crm";
+    return v === "crm";
+  }
+  const filtered = () => S.vis !== "all";
+  // A plain line with a tag block is judged by its tag; untagged content counts as private.
+  function lineVis(l) { const m = String(l).match(/\{src: [^;{}]+; vis: (private|team|crm)\}\s*$/); return m ? m[1] : "private"; }
+  const stripTag = l => String(l).replace(/\s*\{src: [^;{}]+; vis: (private|team|crm)\}\s*$/, "");
+  const recs = (acc, type) => [...acc.records.values()].filter(r => (!type || r.type === type) && visible(r.keys.vis));
+  const matchesQ = s => !S.q || (s || "").toLowerCase().includes(S.q.toLowerCase());
+
+  /* ---------- analysis ---------- */
+  function analyse(acc) {
+    const t = S.today;
+    const expired = recs(acc).filter(r => LEASED.has(r.type) && !EXEMPT.has(r.keys.status) && isDate(r.keys.review_by) && r.keys.review_by < t);
+    const overdue = recs(acc, "A").filter(r => ["open", "waiting"].includes(r.keys.status) && isDate(r.keys.due) && r.keys.due < t && !expired.includes(r));
+    const decisionsDue = recs(acc, "D").filter(r => r.keys.status === "active" && isDate(r.keys.revisit) && r.keys.revisit <= addDays(t, 14));
+    const proposals = recs(acc, "P").filter(r => r.keys.status === "open");
+    const people = recs(acc, "S");
+    const high = people.filter(p => p.keys.influence === "high");
+    const engaged = high.filter(p => isDate(p.keys.last_contact) && days(p.keys.last_contact, t) <= acc.window);
+    const stale = ["account-plan.md", "value-proposition.md", "stakeholders.md"].filter(f => acc.docs[f] && isDate(acc.docs[f].fm.updated) && days(acc.docs[f].fm.updated, t) > acc.staleDays);
+    const roles = ["decision-maker", "economic", "technical", "user", "coach", "gatekeeper"];
+    const missingRoles = roles.filter(r => !people.some(p => p.keys.buying_role === r));
+    const plan = acc.docs["account-plan.md"];
+    const prioSub = plan && plan.subs.find(s => s.name === "Priorities" && s.sec === "Current");
+    const priorities = prioSub && !filtered() ? prioSub.lines.map(l => l.match(/^\s*\d+\.\s+(.*)$/)).filter(Boolean).map(m => m[1]) : [];
+    return { expired, overdue, decisionsDue, proposals, people, high, engaged, stale, missingRoles, priorities };
+  }
+  function freshness(p, acc) {
+    const d = p.keys.last_contact;
+    if (!isDate(d)) return "never";
+    return days(d, S.today) <= acc.window ? "fresh" : "stale";
+  }
+  const statusClass = s => ({ "on-track": "good", green: "good", done: "good", active: "acc", champion: "good", supporter: "good",
+    "at-risk": "warn", amber: "warn", waiting: "warn", candidate: "acc", watch: "acc", open: "acc", sceptic: "warn", draft: "warn",
+    "off-track": "bad", red: "bad", blocker: "bad", validated: "good", retired: "", parked: "", dropped: "" })[s] ?? "";
+  const pill = (s, cls) => h("span", { class: "pill " + (cls ?? statusClass(s)) }, s || "unknown");
+
+  /* ---------- inline text with ID links and safe URLs ---------- */
+  function rich(text, acc) {
+    const out = []; const s = String(text ?? "");
+    const re = new RegExp(`${ID_RE.source}|(https?:\\/\\/[^\\s)>\\]]+)`, "g");
+    let last = 0, m;
+    while ((m = re.exec(s))) {
+      if (m.index > last) out.push(s.slice(last, m.index));
+      if (m[2]) out.push(h("a", { href: m[2], target: "_blank", rel: "noopener noreferrer" }, m[2]));
+      else out.push(idLink(m[1], acc));
+      last = re.lastIndex;
+    }
+    if (last < s.length) out.push(s.slice(last));
+    return out;
+  }
+  function idLink(id, acc) {
+    const has = acc && (acc.records.has(id) || id.startsWith("E-") || S.shared.vp.some(v => v.fm.id === id));
+    return h("a", { class: "idl" + (has ? "" : " missing"), title: has ? "Open " + id : "Not found in this account", onclick: has ? (e => { e.preventDefault(); openRecord(id, acc); }) : null }, id);
+  }
+
+  /* ---------- drawer ---------- */
+  function drawer(title, body) {
+    $("#dtitle").textContent = title;
+    const b = $("#dbody"); b.replaceChildren(body);
+    $("#drawer").classList.add("open"); $("#drawer").setAttribute("aria-hidden", "false");
+  }
+  function closeDrawer() { $("#drawer").classList.remove("open"); $("#drawer").setAttribute("aria-hidden", "true"); }
+  function openRecord(id, acc) {
+    if (id.startsWith("VP-")) return openVP(id);
+    if (id.startsWith("E-")) {
+      const ep = acc.episodes.find(e => e.fm.id === id);
+      return drawer(id, ep ? mdView(ep.path) : h("p", { class: "muted" }, "Episode archived or not found."));
+    }
+    const r = acc.records.get(id);
+    if (!r) return;
+    const uniq = acc.logs.filter(e => e.text.includes(id) && visible(e.vis)).sort((a, b) => b.date.localeCompare(a.date));
+    const dependents = [...acc.records.values()].filter(x => (x.keys.depends_on || "").split(",").map(s => s.trim()).includes(id));
+    drawer(`${id} · ${r.title}`, h("div", null,
+      h("p", { class: "muted small" }, r.file),
+      !visible(r.keys.vis) ? h("p", { class: "banner" }, "Hidden by the current visibility filter.") :
+      h("dl", { class: "kv" }, Object.entries(r.keys).map(([k, v]) => [h("dt", null, k), h("dd", null, k === "status" || k === "stance" ? pill(v) : rich(v, acc))])),
+      r.extra ? h("div", { class: "small muted", style: "margin-top:8px" }, r.extra.join("\n")) : null,
+      dependents.length ? [h("h4", null, "Waiting on this"), h("ul", { class: "plain" }, dependents.map(d => h("li", null, idLink(d.id, acc), " ", d.title)))] : null,
+      h("h4", null, `History and mentions (${uniq.length})`),
+      uniq.length ? h("ul", { class: "plain" }, uniq.map(e => h("li", null, h("span", { class: "mono" }, e.date), " ", rich(e.text, acc), h("div", { class: "small muted" }, fileName(e.file), " · ", e.src)))) : h("p", { class: "muted" }, "None.")
+    ));
+  }
+  function openVP(id) {
+    const v = S.shared.vp.find(x => x.fm.id === id);
+    if (!v) return;
+    drawer(`${id} · ${v.fm.title || ""}`, mdView(v.path));
+  }
+  const fileName = p => (p || "").split("/").slice(-1)[0];
+
+  /* ---------- markdown (subset) ---------- */
+  function mdView(path) {
+    const text = S.rel.get(path);
+    if (filtered()) {
+      const vp = S.shared.vp.find(v => v.path === path);
+      if (!vp || !visible(vp.fm.vis || "team")) return h("p", { class: "muted" }, "Raw files are hidden in presentation mode.");
+    }
+    if (text == null) return h("p", { class: "muted" }, "Not readable here (binary or too large).");
+    if (!/\.md$/i.test(path)) return h("pre", { class: "md" }, text);
+    const { fm, body } = frontMatter(text);
+    const acc = S.accounts.find(a => path.startsWith(a.dir));
+    const root = h("div", { class: "md" });
+    if (Object.keys(fm).length) root.append(h("div", { class: "fm" }, h("dl", { class: "kv" }, Object.entries(fm).map(([k, v]) => [h("dt", null, k), h("dd", null, Array.isArray(v) ? v.join(", ") : v)]))));
+    const lines = body.replace(/<!--[\s\S]*?-->/g, "").split("\n");
+    let i = 0, list = null;
+    const inline = s => {
+      const out = []; const re = /(`[^`]+`)|(\*\*[^*]+\*\*)|\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+      let last = 0, m;
+      while ((m = re.exec(s))) {
+        if (m.index > last) out.push(...rich(s.slice(last, m.index), acc));
+        if (m[1]) out.push(h("code", null, m[1].slice(1, -1)));
+        else if (m[2]) out.push(h("strong", null, m[2].slice(2, -2)));
+        else out.push(h("a", { href: m[4], target: "_blank", rel: "noopener noreferrer" }, m[3]));
+        last = re.lastIndex;
+      }
+      if (last < s.length) out.push(...rich(s.slice(last), acc));
+      return out;
+    };
+    while (i < lines.length) {
+      const l = lines[i];
+      if (/^```/.test(l)) { const buf = []; i++; while (i < lines.length && !/^```/.test(lines[i])) buf.push(lines[i++]); i++; root.append(h("pre", null, buf.join("\n"))); list = null; continue; }
+      const hm = l.match(/^(#{1,4}) (.*)$/);
+      if (hm) { root.append(h("h" + hm[1].length, null, inline(hm[2]))); list = null; i++; continue; }
+      if (/^\|/.test(l)) {
+        const rows = []; while (i < lines.length && /^\|/.test(lines[i])) rows.push(lines[i++]);
+        const cells = r => r.replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+        const body = rows.filter(r => !/^\|\s*-/.test(r));
+        root.append(h("table", null, h("thead", null, h("tr", null, cells(body[0]).map(c => h("th", null, inline(c))))), h("tbody", null, body.slice(1).map(r => h("tr", null, cells(r).map(c => h("td", null, inline(c))))))));
+        list = null; continue;
+      }
+      const lm = l.match(/^(\s*)(-|\d+\.) (.*)$/);
+      if (lm) {
+        const ordered = /\d/.test(lm[2]);
+        if (!list || list.ordered !== ordered) { list = { el: h(ordered ? "ol" : "ul"), ordered }; root.append(list.el); }
+        list.el.append(h("li", { style: lm[1].length ? "margin-left:16px" : null }, inline(lm[3]))); i++; continue;
+      }
+      if (/^> /.test(l)) { root.append(h("blockquote", null, inline(l.slice(2)))); list = null; i++; continue; }
+      if (!l.trim()) { list = null; i++; continue; }
+      const buf = [l]; i++;
+      while (i < lines.length && lines[i].trim() && !/^(#|```|\||\s*-|\s*\d+\.|> )/.test(lines[i])) buf.push(lines[i++]);
+      root.append(h("p", null, inline(buf.join(" ")))); list = null;
+    }
+    return root;
+  }
+
+  /* ---------- views ---------- */
+  function renderNav() {
+    const nav = $("#nav"); nav.replaceChildren();
+    if (!S.accounts.length && !S.shared.vp.length) { nav.append(h("p", { class: "muted small", style: "padding:0 16px" }, "No workspace loaded.")); return; }
+    nav.append(h("h2", null, "Accounts"));
+    for (const a of S.accounts) {
+      const an = analyse(a);
+      const flags = an.expired.length + an.overdue.length + an.decisionsDue.length;
+      nav.append(h("button", { class: S.view.kind === "account" && S.view.slug === a.slug ? "active" : "", onclick: () => go({ kind: "account", slug: a.slug }) },
+        a.name, h("span", { class: "sub" }, `${a.fm.phase || "phase unknown"} · ${flags} to check · inbox ${a.inbox.length}`)));
+    }
+    nav.append(h("h2", null, "Shared"));
+    nav.append(h("button", { class: S.view.kind === "library" ? "active" : "", onclick: () => go({ kind: "library" }) }, "Value-proposition library", h("span", { class: "sub" }, `${S.shared.vp.length} entries · ${S.shared.products.length} products`)));
+    if (S.q) nav.append(h("button", { class: S.view.kind === "search" ? "active" : "", onclick: () => go({ kind: "search" }) }, `Search: “${S.q}”`));
+  }
+  function go(v) {
+    if (v.kind === "account" && v.slug !== S.view.slug) { S.tab = "overview"; S.tl = { files: new Set(), person: "" }; }
+    S.view = v; closeDrawer(); render();
+  }
+
+  function render() {
+    renderNav();
+    const main = $("#main"); main.replaceChildren();
+    if (S.vis !== "all") main.append(h("div", { class: "banner" }, S.vis === "crm" ? "Presentation mode: only entries marked crm are shown." : "Presentation mode: private entries are hidden."));
+    if (S.view.kind === "home") return main.append(home());
+    if (S.view.kind === "library") return main.append(library());
+    if (S.view.kind === "search") return main.append(search());
+    const acc = S.accounts.find(a => a.slug === S.view.slug);
+    if (!acc) return main.append(home());
+    main.append(h("h2", { class: "title" }, acc.name), h("div", { class: "subtitle" }, `${acc.fm.phase || "phase unknown"} · last review ${ago(acc.fm.last_review)} · last ingest ${ago(acc.fm.last_ingest)} · reminder budget ${acc.budget}`));
+    const tabs = [["overview", "Overview"], ["people", "People"], ["plan", "Plan"], ["actions", "Actions"], ["timeline", "Timeline"], ["value", "Value"], ["delivery", "Delivery & news"], ["files", "Files"]];
+    main.append(h("div", { class: "tabs", role: "tablist" }, tabs.map(([k, l]) => h("button", { role: "tab", class: S.tab === k ? "active" : "", onclick: () => { S.tab = k; render(); } }, l))));
+    const view = { overview, people, plan, actions, timeline, value, delivery, files }[S.tab];
+    main.append(view(acc));
+  }
+
+  function home() {
+    if (S.accounts.length) {
+      return h("div", null, h("h2", { class: "title" }, S.rootName), h("p", { class: "subtitle" }, `${S.accounts.length} account(s). Choose one on the left.`),
+        h("div", { class: "grid g2", style: "margin-top:16px" }, S.accounts.map(a => { const an = analyse(a); return h("div", { class: "card", style: "cursor:pointer", onclick: () => go({ kind: "account", slug: a.slug }) },
+          h("h3", null, a.name), h("div", { class: "small" }, `Priorities ${an.priorities.length} · expired ${an.expired.length} · decisions due ${an.decisionsDue.length} · open proposals ${an.proposals.length} · inbox ${a.inbox.length}`)); })));
+    }
+    return h("div", { class: "empty" },
+      h("h2", null, "Open your account workspace"),
+      h("p", null, "This page reads the Markdown files of a Sales Copilot workspace and shows them as an overview. It runs entirely in this browser window: it never writes to your files and has no network access."),
+      h("ol", null,
+        h("li", null, "Click “Open workspace folder” and choose the workspace folder (the one that contains ", h("code", null, "accounts"), " and ", h("code", null, "_shared"), ")."),
+        h("li", null, "In Edge or Chrome you can grant read access once and use “Reload” after each skill run. Other browsers ask you to choose the folder again."),
+        h("li", null, "Use “Show” to hide private entries before sharing your screen.")),
+      h("p", { class: "muted small" }, "Nothing is stored by this page. Closing the tab forgets everything."));
+  }
+
+  function stat(v, l, cls) { return h("div", { class: "card stat " + (cls || "") }, h("div", { class: "v" }, v), h("div", { class: "l" }, l)); }
+  function recLine(r, acc, extra) {
+    return h("li", null, idLink(r.id, acc), " ", r.title, " ", extra || null);
+  }
+
+  function overview(acc) {
+    const an = analyse(acc);
+    const goals = recs(acc, "G");
+    const summary = acc.readme.sections.Current || [];
+    return h("div", null,
+      h("div", { class: "grid g4" },
+        stat(an.priorities.length, "priorities set"),
+        stat(an.expired.length, "expired leases", an.expired.length ? "warn" : "good"),
+        stat(an.decisionsDue.length, "decisions due ≤ 14 d", an.decisionsDue.length ? "warn" : ""),
+        stat(an.proposals.length, "open proposals", an.proposals.length ? "warn" : ""),
+        stat(`${an.engaged.length}/${an.high.length}`, `high-influence contacts engaged (≤ ${acc.window} d)`, !an.high.length ? "" : an.engaged.length < 3 ? "bad" : "good"),
+        stat(acc.inbox.length, "items in inbox", acc.inbox.length ? "warn" : "")),
+      h("div", { class: "grid g2", style: "margin-top:14px" },
+        h("div", { class: "card" }, h("h3", null, "Summary"), h("ul", { class: "plain" }, summary.filter(l => l.startsWith("- ") && visible(lineVis(l))).map(l => h("li", null, rich(stripTag(l.slice(2)), acc)))), filtered() ? h("p", { class: "muted small" }, "Untagged summary lines are hidden in presentation mode.") : null),
+        h("div", { class: "card" }, h("h3", null, `Priorities (budget ${acc.budget})`),
+          an.priorities.length ? h("ol", { style: "margin:0;padding-left:20px" }, an.priorities.map(p => h("li", { style: "padding:3px 0" }, rich(p, acc)))) : h("p", { class: "muted" }, filtered() ? "Hidden in presentation mode." : "None set. Run review."),
+          an.priorities.length > acc.budget ? h("p", { class: "pill warn" }, "More priorities than the reminder budget") : null),
+        h("div", { class: "card" }, h("h3", null, "Goals"), goals.length ? h("ul", { class: "plain" }, goals.map(g => h("li", null, idLink(g.id, acc), " ", g.title, " ", pill(g.keys.status), h("div", { class: "small muted" }, `target ${g.keys.target_date} (${ago(g.keys.target_date)}) · ${g.keys.measure}`)))) : h("p", { class: "muted" }, "No goals recorded.")),
+        h("div", { class: "card" }, h("h3", null, "Needs a look"),
+          h("ul", { class: "plain" },
+            an.decisionsDue.map(r => recLine(r, acc, h("span", { class: "pill warn" }, `revisit ${r.keys.revisit}`))),
+            an.overdue.map(r => recLine(r, acc, h("span", { class: "pill bad" }, `due ${r.keys.due}`))),
+            an.proposals.map(r => recLine(r, acc, pill(r.keys.kind, "acc"))),
+            an.high.length && an.engaged.length < 3 ? h("li", null, h("span", { class: "pill bad" }, "single-threaded risk"), " fewer than 3 high-influence contacts engaged: ", an.high.filter(p => !an.engaged.includes(p)).map(p => [idLink(p.id, acc), " "])) : null,
+            an.people.length && an.missingRoles.length ? h("li", null, h("span", { class: "pill" }, "coverage"), " no one recorded as: ", an.missingRoles.join(", ")) : null,
+            an.stale.map(f => h("li", null, h("span", { class: "pill warn" }, "stale"), ` ${f} not updated for more than ${acc.staleDays} days`)),
+            acc.inbox.map(n => h("li", null, h("span", { class: "pill acc" }, "inbox"), " ", n)))),
+        h("div", { class: "card" }, h("h3", null, "Expired — confirm, park or drop"),
+          an.expired.length ? h("ul", { class: "plain" }, an.expired.map(r => recLine(r, acc, h("span", { class: "small muted" }, `review_by ${r.keys.review_by}${r.keys.episode ? " · " + r.keys.episode : ""}`)))) : h("p", { class: "muted" }, "Nothing expired.")),
+        h("div", { class: "card" }, h("h3", null, "Recent runs"), runLog(acc))));
+  }
+  function runLog(acc) {
+    const runs = acc.readme.logs.filter(e => /^run: /.test(e.text) && visible(e.vis)).slice(0, 8);
+    return runs.length ? h("ul", { class: "plain" }, runs.map(e => h("li", null, h("span", { class: "mono" }, e.date), " ", rich(e.text, acc)))) : h("p", { class: "muted" }, "No run-log entries yet.");
+  }
+
+  function people(acc) {
+    const an = analyse(acc);
+    const ppl = an.people.filter(p => matchesQ(p.title + " " + JSON.stringify(p.keys)));
+    const grid = h("div", { class: "smap" }, h("div"), STANCES.map(s => h("div", { class: "hd" }, s)));
+    for (const inf of INFL) {
+      grid.append(h("div", { class: "rh" }, inf));
+      for (const st of STANCES) {
+        const here = ppl.filter(p => (INFL.includes(p.keys.influence) ? p.keys.influence : "unknown") === inf && (STANCES.includes(p.keys.stance) ? p.keys.stance : "unknown") === st);
+        grid.append(h("div", { class: "cell" }, here.map(p => h("div", { class: "person " + freshness(p, acc), title: `last contact ${p.keys.last_contact}`, onclick: () => openRecord(p.id, acc) },
+          p.title, h("div", { class: "r" }, p.keys.role)))));
+      }
+    }
+    const our = (acc.docs["stakeholders.md"]?.subs || []).find(s => s.name === "Our side");
+    return h("div", null,
+      h("div", { class: "card" }, h("h3", null, "Influence × stance"), grid,
+        h("div", { class: "legend" }, h("span", null, h("i", { style: "background:var(--good)" }), `contact ≤ ${acc.window} d`), h("span", null, h("i", { style: "background:var(--warn)" }), "older"), h("span", null, h("i", { style: "background:var(--bad)" }), "never / unknown"))),
+      h("div", { class: "card", style: "margin-top:14px" }, h("h3", null, "People"),
+        h("table", null, h("thead", null, h("tr", null, ["Name", "Role", "Buying role", "Influence", "Stance", "Last contact", "Personal win", "Next step"].map(x => h("th", null, x)))),
+          h("tbody", null, ppl.sort((a, b) => INFL.indexOf(a.keys.influence) - INFL.indexOf(b.keys.influence)).map(p => h("tr", { class: "click", onclick: () => openRecord(p.id, acc) },
+            h("td", null, p.title), h("td", null, p.keys.role), h("td", null, p.keys.buying_role || "—"), h("td", null, p.keys.influence), h("td", null, pill(p.keys.stance)),
+            h("td", null, h("span", { class: "pill " + ({ fresh: "good", stale: "warn", never: "bad" })[freshness(p, acc)] }, ago(p.keys.last_contact))),
+            h("td", { class: "small" }, p.keys.personal_win || "—"), h("td", { class: "small" }, p.keys.next_step || "—")))))),
+      our ? h("div", { class: "card", style: "margin-top:14px" }, h("h3", null, "Our side"), h("ul", { class: "plain" }, our.lines.map(l => parseInlineTagged(l)).filter(Boolean).filter(x => visible(x.vis)).map(x => h("li", null, x.text)))) : null);
+  }
+  function parseInlineTagged(l) {
+    const m = l.match(/^- (.*?)\s*\{src: [^;{}]+; vis: (private|team|crm)\}\s*$/);
+    if (m) return { text: m[1], vis: m[2] };
+    if (/^- /.test(l)) return { text: l.slice(2), vis: "private" };
+    return null;
+  }
+
+  function plan(acc) {
+    const d = acc.docs["account-plan.md"]; if (!d) return h("p", { class: "muted" }, "No account-plan.md.");
+    const strat = d.subs.find(s => s.name === "Client strategy");
+    const stratText = strat ? strat.lines.join(" ").trim() : "";
+    const stratTag = stratText.match(/\{src: [^;{}]+; vis: (private|team|crm)\}\s*$/);
+    const an = analyse(acc);
+    const qs = recs(acc, "Q");
+    const decisions = recs(acc, "D");
+    return h("div", { class: "grid g2" },
+      h("div", { class: "card" }, h("h3", null, "Client strategy"), stratText && visible(stratTag ? stratTag[1] : "private") ? h("p", { style: "margin:0" }, rich(stratText.replace(/\{src:[^}]*\}\s*$/, ""), acc)) : h("p", { class: "muted" }, "Not recorded or hidden.")),
+      h("div", { class: "card" }, h("h3", null, "Goals"), recs(acc, "G").map(g => {
+        const ev = acc.logs.filter(e => e.text.includes(g.id)).length;
+        const left = isDate(g.keys.target_date) ? days(S.today, g.keys.target_date) : null;
+        return h("div", { style: "padding:8px 0;border-bottom:1px solid var(--soft)" }, idLink(g.id, acc), " ", h("strong", null, g.title), " ", pill(g.keys.status),
+          h("div", { class: "small muted" }, `${g.keys.measure} · target ${g.keys.target_date}${left != null ? ` (${left >= 0 ? left + " d left" : -left + " d overdue"})` : ""} · ${ev} history mention(s)`));
+      })),
+      h("div", { class: "card" }, h("h3", null, "Priorities"), an.priorities.length ? h("ol", { style: "margin:0;padding-left:20px" }, an.priorities.map(p => h("li", null, rich(p, acc)))) : h("p", { class: "muted" }, "None.")),
+      h("div", { class: "card" }, h("h3", null, "Open questions"), qs.length ? h("ul", { class: "plain" }, qs.map(q => recLine(q, acc, [pill(q.keys.status), " ", h("span", { class: "small muted" }, `review_by ${q.keys.review_by}`)]))) : h("p", { class: "muted" }, "None.")),
+      h("div", { class: "card" }, h("h3", null, "Decisions"), decisions.length ? h("table", null, h("tbody", null, decisions.map(r => h("tr", { class: "click", onclick: () => openRecord(r.id, acc) }, h("td", { class: "mono nowrap" }, r.keys.decided), h("td", null, r.title, h("div", { class: "small muted" }, r.keys.who || "")), h("td", null, pill(r.keys.status)), h("td", { class: "small" }, "revisit ", r.keys.revisit))))) : h("p", { class: "muted" }, "None.")),
+      filtered() ? null : h("div", { class: "card" }, h("h3", null, "Episodes"),
+        h("ul", { class: "plain" }, acc.episodes.map(e => h("li", null, idLink(e.fm.id, acc), " ", e.title.replace(/^Episode — /, ""), " ", pill(e.fm.status, e.fm.status === "open" ? "acc" : ""), h("div", { class: "small muted" }, `opened ${e.fm.opened}`))),
+          acc.archivedEpisodes.map(p => h("li", { class: "muted" }, fileName(p), " (archived)")),
+          !acc.episodes.length && !acc.archivedEpisodes.length ? h("li", { class: "muted" }, "None.") : null)),
+      h("div", { class: "card", style: "grid-column:1/-1" }, h("h3", null, "Plan history"), logList(d.logs, acc)));
+  }
+  function logList(list, acc) {
+    const l = list.filter(e => visible(e.vis) && matchesQ(e.text));
+    return l.length ? h("ul", { class: "plain" }, l.map(e => h("li", null, h("span", { class: "mono" }, e.date), " ", rich(e.text, acc), h("span", { class: "small muted" }, "  · ", e.src)))) : h("p", { class: "muted" }, "No entries.");
+  }
+
+  function actions(acc) {
+    const all = recs(acc, "A");
+    const t = S.today;
+    const isExp = r => !EXEMPT.has(r.keys.status) && isDate(r.keys.review_by) && r.keys.review_by < t;
+    const f = { open: r => ["open", "waiting"].includes(r.keys.status) && !isExp(r), expired: isExp, done: r => ["done", "dropped", "parked"].includes(r.keys.status), all: () => true }[S.actFilter];
+    const list = all.filter(f).filter(r => matchesQ(r.title + " " + JSON.stringify(r.keys)))
+      .sort((a, b) => (a.keys.due || "9999").localeCompare(b.keys.due || "9999"));
+    const statusOf = id => acc.records.get(id)?.keys.status;
+    return h("div", { class: "card" },
+      h("div", { class: "toolbar" }, h("div", { class: "chipbar" }, [["open", "Open (current)"], ["expired", "Expired"], ["done", "Done / parked / dropped"], ["all", "All"]].map(([k, l]) =>
+        h("button", { class: S.actFilter === k ? "on" : "", onclick: () => { S.actFilter = k; render(); } }, `${l} (${all.filter({ open: r => ["open", "waiting"].includes(r.keys.status) && !isExp(r), expired: isExp, done: r => ["done", "dropped", "parked"].includes(r.keys.status), all: () => true }[k]).length})`)))),
+      list.length ? h("table", null, h("thead", null, h("tr", null, ["ID", "Action", "Owner", "Due", "Lease", "Depends on", "Status"].map(x => h("th", null, x)))),
+        h("tbody", null, list.map(r => {
+          const deps = (r.keys.depends_on || "").split(",").map(s => s.trim()).filter(Boolean);
+          const blocked = deps.some(d => !["done", "dropped"].includes(statusOf(d)));
+          return h("tr", { class: "click", onclick: () => openRecord(r.id, acc) },
+            h("td", { class: "nowrap" }, h("span", { class: "mono" }, r.id)), h("td", null, r.title, r.keys.episode ? h("div", { class: "small muted" }, r.keys.episode) : null),
+            h("td", { class: "small" }, rich(r.keys.owner, acc)),
+            h("td", null, r.keys.due ? h("span", { class: "pill " + (r.keys.due < t && !EXEMPT.has(r.keys.status) ? "bad" : "") }, r.keys.due) : "—"),
+            h("td", null, h("span", { class: "pill " + (isExp(r) ? "warn" : "") }, r.keys.review_by || "—")),
+            h("td", null, deps.map(d => [idLink(d, acc), " "]), blocked ? h("span", { class: "pill warn" }, "blocked") : null),
+            h("td", null, pill(r.keys.status)));
+        }))) : h("p", { class: "muted" }, "No actions in this view."));
+  }
+
+  function timeline(acc) {
+    const all =acc.logs.map(e => ({ ...e, comm: e.file.endsWith("comm-log.md") })).filter(e => visible(e.vis));
+    const files = [...new Set(all.map(e => fileName(e.file)))].sort();
+    const people = recs(acc, "S");
+    const sel = all.filter(e => (!S.tl.files.size || S.tl.files.has(fileName(e.file))) && (!S.tl.person || e.text.includes(S.tl.person)) && matchesQ(e.text + " " + e.src))
+      .sort((a, b) => b.date.localeCompare(a.date) || (b.comm - a.comm));
+    const body = h("div");
+    let month = "";
+    let tl = null;
+    for (const e of sel) {
+      const m = e.date.slice(0, 7);
+      if (m !== month) { month = m; body.append(h("div", { class: "tl-month" }, new Date(m + "-01").toLocaleDateString(undefined, { year: "numeric", month: "long" }))); tl = h("div", { class: "tl" }); body.append(tl); }
+      tl.append(h("div", { class: "e " + (e.comm ? "comm" : "") },
+        h("div", null, h("span", { class: "mono" }, e.date), "  ", e.comm ? [pill(e.parts[0], "acc"), " ", pill(e.parts[1]), " ", rich(e.parts.slice(2).join(" · "), acc)] : rich(e.text, acc)),
+        h("div", { class: "meta" }, fileName(e.file), " · ", e.src, e.vis !== "private" ? ["  ", pill(e.vis, "acc")] : null)));
+    }
+    return h("div", { class: "card" },
+      h("div", { class: "toolbar" },
+        h("div", { class: "chipbar" }, files.map(f => h("button", { class: S.tl.files.has(f) ? "on" : "", onclick: () => { S.tl.files.has(f) ? S.tl.files.delete(f) : S.tl.files.add(f); render(); } }, f))),
+        h("select", { onchange: e => { S.tl.person = e.target.value; render(); } }, h("option", { value: "" }, "All people"), people.map(p => h("option", { value: p.id, selected: S.tl.person === p.id ? true : null }, p.title)))),
+      h("p", { class: "small muted", style: "margin:0" }, `${sel.length} entries · filled dots = client communication`),
+      sel.length ? body : h("p", { class: "muted" }, "No entries match."));
+  }
+
+  function value(acc) {
+    const avps = recs(acc, "AVP");
+    const signals = (acc.docs["value-proposition.md"]?.logs || []).filter(e => visible(e.vis) && /signal:/.test(e.text));
+    return h("div", { class: "grid g2" },
+      avps.map(a => {
+        const lib = S.shared.vp.find(v => v.fm.id === a.keys.library);
+        return h("div", { class: "card" }, h("h3", null, a.id, " · ", pill(a.keys.status)), h("strong", null, a.title),
+          h("p", { class: "small" }, a.keys.framing || ""),
+          h("dl", { class: "kv small" }, h("dt", null, "library"), h("dd", null, lib ? h("a", { class: "idl", onclick: () => openVP(lib.fm.id) }, lib.fm.id) : (a.keys.library || "—"), lib ? [" ", pill(lib.fm.status)] : null),
+            h("dt", null, "serves"), h("dd", null, rich(a.keys.client_need || "—", acc)), h("dt", null, "for"), h("dd", null, rich(a.keys.stakeholders || "—", acc)),
+            lib ? [h("dt", null, "products"), h("dd", null, (lib.fm.products || []).join(", ") || "—"), h("dt", null, "proof"), h("dd", null, (lib.fm.proof || []).length ? `${lib.fm.proof.length} reference(s)` : h("span", { class: "pill warn" }, "none"))] : null));
+      }),
+      h("div", { class: "card", style: "grid-column:1/-1" }, h("h3", null, `Client signals (${signals.length})`), logList(signals, acc)));
+  }
+
+  function delivery(acc) {
+    const dl = recs(acc, "DL"), news = recs(acc, "N"), rm = recs(acc, "RM");
+    const t = S.today;
+    return h("div", { class: "grid g2" },
+      h("div", { class: "card" }, h("h3", null, "Delivery"), dl.length ? h("ul", { class: "plain" }, dl.map(r => h("li", { style: "cursor:pointer", onclick: () => openRecord(r.id, acc) }, pill(r.keys.status), " ", h("strong", null, r.title),
+        h("div", { class: "small muted" }, `updated ${r.keys.last_update || "?"} · lease ${r.keys.review_by}${r.keys.review_by < t ? " (expired)" : ""}`), r.keys.risks && r.keys.risks !== "none known" ? h("div", { class: "small" }, "Risk: ", r.keys.risks) : null))) : h("p", { class: "muted" }, "None.")),
+      h("div", { class: "card" }, h("h3", null, "News and signals"), news.length ? h("ul", { class: "plain" }, news.sort((a, b) => (b.keys.date || "").localeCompare(a.keys.date || "")).map(r => h("li", { style: "cursor:pointer", onclick: () => openRecord(r.id, acc) },
+        pill(r.keys.relevance, r.keys.relevance === "high" ? "warn" : ""), " ", r.title, h("div", { class: "small muted" }, `${r.keys.date || ""} · ${r.keys.status}${r.keys.review_by < t && !EXEMPT.has(r.keys.status) ? " · lease expired" : ""}`), h("div", { class: "small" }, r.keys.implication || "")))) : h("p", { class: "muted" }, "None.")),
+      h("div", { class: "card" }, h("h3", null, "Roadmap items relevant here"), rm.length ? h("ul", { class: "plain" }, rm.map(r => h("li", null, h("strong", null, r.title), " ", pill(r.keys.status), h("div", { class: "small muted" }, `${r.keys.product} · expected ${r.keys.expected || "?"}`), h("div", { class: "small" }, rich(r.keys.relevance || "", acc))))) : h("p", { class: "muted" }, "None.")));
+  }
+
+  function files(acc) {
+    if (filtered()) return h("div", { class: "card" }, h("p", { class: "muted", style: "margin:0" }, "Raw files are hidden in presentation mode. Switch “Show” back to all entries."));
+    const list = S.relNames.filter(p => p.startsWith(acc.dir) && !p.endsWith(".gitkeep")).sort();
+    if (!S.filePath || !S.filePath.startsWith(acc.dir)) S.filePath = acc.dir + "README.md";
+    const groups = {};
+    for (const p of list) { const r = p.slice(acc.dir.length); const g = r.includes("/") ? r.split("/")[0] + "/" : "(account files)"; (groups[g] = groups[g] || []).push(p); }
+    return h("div", { class: "files" },
+      h("div", { class: "card" }, Object.entries(groups).map(([g, ps]) => [h("h3", null, g), h("ul", null, ps.map(p => h("li", null, h("button", { class: S.filePath === p ? "active" : "", onclick: () => { S.filePath = p; render(); } }, p.slice(acc.dir.length)))))])),
+      h("div", { class: "card" }, h("p", { class: "mono muted", style: "margin-top:0" }, S.filePath), mdView(S.filePath)));
+  }
+
+  function library() {
+    const prod = new Set(S.shared.products.map(p => p.fm.id || fileName(p.path).replace(/\.md$/, "")));
+    const announced = new Set(S.shared.products.filter(p => /announced|roadmap/i.test(S.rel.get(p.path) || "")).map(p => p.fm.id));
+    const rows = S.shared.vp.filter(v => visible(v.fm.vis || "team")).filter(v => matchesQ(JSON.stringify(v.fm) + (S.rel.get(v.path) || ""))).map(v => {
+      const fm = v.fm; const flags = [];
+      if (fm.status === "retired") return { v, fm, flags };
+      if (isDate(fm.updated) && days(fm.updated, S.today) > 180) flags.push("stale");
+      if (fm.status === "validated" && !(fm.proof || []).length) flags.push("unproven");
+      for (const p of fm.products || []) if (!prod.has(p)) flags.push("product missing: " + p);
+      if (/announced/i.test(S.rel.get(v.path) || "") && fm.status !== "retired") flags.push("product?");
+      return { v, fm, flags };
+    });
+    return h("div", null, h("h2", { class: "title" }, "Value-proposition library"), h("p", { class: "subtitle" }, "Shared entries in _shared/value-propositions. Flags: stale (> 180 d), unproven (validated without proof), product? (mentions an announced capability)."),
+      h("div", { class: "card", style: "margin-top:14px" }, h("table", null, h("thead", null, h("tr", null, ["Entry", "Status", "Challenge patterns", "Products", "Used at", "Updated", "Flags"].map(x => h("th", null, x)))),
+        h("tbody", null, rows.map(({ v, fm, flags }) => h("tr", { class: "click", onclick: () => openVP(fm.id) },
+          h("td", null, h("strong", null, fm.title || fm.id), h("div", { class: "mono muted" }, fm.id)), h("td", null, pill(fm.status)),
+          h("td", { class: "small" }, (fm.challenge_patterns || []).join(" · ")), h("td", { class: "small" }, (fm.products || []).join(", ")),
+          h("td", { class: "small" }, (fm.used_at || []).join(", ") || "—"), h("td", { class: "small nowrap" }, fm.updated, h("div", { class: "muted" }, ago(fm.updated))),
+          h("td", null, flags.map(f => [h("span", { class: "pill warn" }, f), " "]))))))),
+      h("div", { class: "grid g2", style: "margin-top:14px" },
+        h("div", { class: "card" }, h("h3", null, "Products"), h("ul", { class: "plain" }, S.shared.products.map(p => h("li", { style: "cursor:pointer", onclick: () => drawer(p.fm.title || p.path, mdView(p.path)) }, p.fm.title || fileName(p.path), " ", pill(p.fm.status), announced.has(p.fm.id) ? [" ", h("span", { class: "pill warn" }, "has announced items")] : null)))),
+        h("div", { class: "card" }, h("h3", null, "Competitors"), S.shared.competitors.length ? h("ul", { class: "plain" }, S.shared.competitors.map(p => h("li", { style: "cursor:pointer", onclick: () => drawer(p.fm.title || p.path, mdView(p.path)) }, p.fm.title || fileName(p.path)))) : h("p", { class: "muted" }, "None."))));
+  }
+
+  function search() {
+    const q = S.q.toLowerCase(); const out = h("div", null, h("h2", { class: "title" }, `Search: “${S.q}”`));
+    for (const acc of S.accounts) {
+      const rs = [...acc.records.values()].filter(r => visible(r.keys.vis) && (r.title + " " + Object.values(r.keys).join(" ")).toLowerCase().includes(q));
+      const ls = acc.logs.filter(e => visible(e.vis) && (e.text + " " + e.src).toLowerCase().includes(q));
+      if (!rs.length && !ls.length) continue;
+      out.append(h("div", { class: "card", style: "margin-top:14px" }, h("h3", null, acc.name),
+        rs.length ? h("ul", { class: "plain" }, rs.map(r => recLine(r, acc, h("span", { class: "small muted" }, fileName(r.file))))) : null,
+        ls.length ? [h("h4", null, `Log entries (${ls.length})`), logList(ls, acc)] : null));
+    }
+    const vs = S.shared.vp.filter(v => (S.rel.get(v.path) || "").toLowerCase().includes(q));
+    if (vs.length) out.append(h("div", { class: "card", style: "margin-top:14px" }, h("h3", null, "Library"), h("ul", { class: "plain" }, vs.map(v => h("li", { style: "cursor:pointer", onclick: () => openVP(v.fm.id) }, v.fm.id, " · ", v.fm.title)))));
+    if (out.childNodes.length === 1) out.append(h("p", { class: "muted" }, "No matches."));
+    return out;
+  }
+
+  /* ---------- loading ---------- */
+  const MAX = 2_000_000;
+  async function readDir(handle, prefix, out) {
+    for await (const [name, child] of handle.entries()) {
+      if (name === ".git" || name === "node_modules") continue;
+      const path = prefix + name;
+      if (child.kind === "directory") await readDir(child, path + "/", out);
+      else {
+        out.names.push(path);
+        if (TEXT_EXT.test(name)) { const f = await child.getFile(); if (f.size <= MAX) out.files.set(path, await f.text()); }
+      }
+    }
+  }
+  async function openFolder() {
+    if (window.showDirectoryPicker) {
+      try { S.dir = await window.showDirectoryPicker({ mode: "read" }); await loadHandle(); return; }
+      catch (e) { if (e && e.name === "AbortError") return; /* blocked by policy → fallback */ }
+    }
+    $("#picker").click();
+  }
+  async function loadHandle() {
+    const out = { names: [], files: new Map() };
+    await readDir(S.dir, S.dir.name + "/", out);
+    ingest(out.names, out.files, `${S.dir.name} · read ${new Date().toLocaleTimeString()}`);
+    $("#reload").hidden = false;
+  }
+  async function fromPicker(fileList) {
+    const out = { names: [], files: new Map() };
+    for (const f of fileList) {
+      const p = f.webkitRelativePath || f.name;
+      if (/(^|\/)\.git\//.test(p)) continue;
+      out.names.push(p);
+      if (TEXT_EXT.test(f.name) && f.size <= MAX) out.files.set(p, await f.text());
+    }
+    ingest(out.names, out.files, `${(out.names[0] || "").split("/")[0]} · read ${new Date().toLocaleTimeString()} (choose again to refresh)`);
+  }
+  function ingest(names, files, info) {
+    S.names = names; S.files = files;
+    build();
+    $("#srcinfo").textContent = S.accounts.length || S.shared.vp.length ? info : "No accounts/ or _shared/ folder found in this selection.";
+    if (S.view.kind === "account" && !S.accounts.some(a => a.slug === S.view.slug)) S.view = { kind: "home" };
+    if (S.view.kind === "home" && S.accounts.length === 1) S.view = { kind: "account", slug: S.accounts[0].slug };
+    render();
+  }
+  /** For tests and scripted use: loadFromList([{path, text}]) */
+  function loadFromList(list) {
+    ingest(list.map(x => x.path), new Map(list.filter(x => x.text != null).map(x => [x.path, x.text])), "loaded from list");
+  }
+
+  /* ---------- wiring ---------- */
+  function init() {
+    $("#today").value = S.today;
+    $("#today").addEventListener("change", e => { if (isDate(e.target.value)) { S.today = e.target.value; render(); } });
+    $("#vis").addEventListener("change", e => { S.vis = e.target.value; closeDrawer(); render(); });
+    $("#q").addEventListener("input", e => { S.q = e.target.value.trim(); if (S.q && S.view.kind === "home") S.view = { kind: "search" }; if (!S.q && S.view.kind === "search") S.view = { kind: "home" }; render(); });
+    $("#q").addEventListener("keydown", e => { if (e.key === "Enter" && S.q) { S.view = { kind: "search" }; render(); } });
+    $("#open").addEventListener("click", openFolder);
+    $("#reload").addEventListener("click", () => S.dir && loadHandle());
+    $("#picker").addEventListener("change", e => fromPicker(e.target.files));
+    $("#dclose").addEventListener("click", closeDrawer);
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+    render();
+  }
+  init();
+  return { loadFromList, state: S };
+})();
+</script>
+</body>
+</html>

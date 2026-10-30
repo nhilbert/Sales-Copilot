@@ -53,7 +53,7 @@ After the account manager confirms (or corrects):
 - `account-plan.md`: move the old `### Priorities` list into History (dated), write the new list into Current; apply confirmed goal status changes (old status to History).
 - Apply dispositions for expired items (renew lease / `parked` / `dropped`, each with a History entry).
 - Set `last_review: <today>` in `README.md`; refresh the README summary (Current, three lines).
-- Commit `review: <slug> <today>`.
+- Append the run log line to `README.md` History (`run: review`), self-check (CONVENTIONS §14).
 
 If no confirmation comes in this conversation, write the proposed priorities as a `priorities` proposal and leave `last_review` unchanged.
 

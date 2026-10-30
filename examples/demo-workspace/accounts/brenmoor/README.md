@@ -21,4 +21,6 @@ Fictional mid-size pump manufacturer with three plants (North, South, East). Any
 - What matters next: pilot results, contact to CIO and purchasing, renewal of the quality contract (January 2027).
 
 ## History
+- 2026-10-20 · run: drop · 1 item · changed S-oyelaran, DL-pilot-north, comm-log {src: me 2026-10-20; vis: private}
+- 2026-10-09 · run: review · changed priorities, G-3, A-20261009-01, A-20261009-02 {src: me 2026-10-09; vis: private}
 - 2026-10-09 · summary refreshed by review {src: me 2026-10-09; vis: private}

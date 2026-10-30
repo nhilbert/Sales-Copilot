@@ -40,7 +40,7 @@ Ask once: "Apply all, or list the IDs to change?"
 - `done` → status done/answered with evidence in History.
 - `keep` → renew `review_by` if expired.
 - Episodes: write the summary into `account-plan.md` History, set `status: closed` and `closed:` in the episode file, move it to `archive/episodes/`, remove it from the Episodes list. New episode: create from `templates/episode/episode.md`, list it under Episodes.
-- Update `phase:` in `README.md` if the statement changes it. Commit `rebase: <slug> <date>`.
+- Update `phase:` in `README.md` if the statement changes it. Append the run log line to `README.md` History (`run: rebase`, with counts per disposition), self-check (CONVENTIONS §14).
 
 ## Never
 

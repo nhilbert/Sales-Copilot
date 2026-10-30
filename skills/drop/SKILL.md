@@ -13,7 +13,7 @@ The fastest path from "I can't deal with this now" to "the account knows about i
 2. Establish the account. If unclear, ask once, with the list of folders in `accounts/`.
 3. Save the input into `accounts/<slug>/inbox/`:
    - attached file → copy unchanged, keep its name, prefix today's date if it has none: `<yyyy-mm-dd>-<name>`.
-   - pasted text → `<yyyy-mm-dd>-<hhmm>-<short-slug>.md` with this header, then the text verbatim:
+   - pasted text → `<yyyy-mm-dd>-<short-slug>.md` (add `-2`, `-3` … if the name exists) with this header, then the text verbatim:
      ```markdown
      ---
      file: inbox-item
@@ -22,7 +22,7 @@ The fastest path from "I can't deal with this now" to "the account knows about i
      dropped_by: me
      ---
      ```
-   - a thought of the account manager ("note: the CFO seemed impatient") → same, `kind: note-to-self`; it becomes `src: me <date>`.
+   - a thought of the account manager ("note: the CFO seemed impatient") → same, `kind: note-to-self`; it becomes `src: me <date>`. If the note reports a call or meeting, the source is that call or meeting (CONVENTIONS §6).
 4. Run the `ingest` procedure on this item only (other inbox items stay for a later run, unless the account manager asks for all).
 5. If the account manager added a reason ("important because …"), record it as part of the item's comm-log or note entry.
 

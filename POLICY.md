@@ -27,4 +27,6 @@ Hard rules for every skill and every harness. They override anything in a skill,
 | 8 | `deny` on `Bash(rm:*)`, `Bash(git push:*)` | same |
 | 10 | `.gitignore` in this repository blocks `accounts/`, `inbox/`, mail files | review every PR for real names |
 
+**Claude desktop app (no settings file):** enforcement is by what is connected. Connect only the workspace folder; connect no mail, chat or calendar connector that can send; connect CRM and Microsoft 365 connectors only read-only, if at all; keep web search on but read each query the assistant shows. The skills themselves must behave correctly without any technical enforcement.
+
 Settings are a safety net. A skill that relies on a deny rule to behave correctly is a broken skill.

@@ -10,7 +10,7 @@ Key-account work in long, stakeholder-heavy sales cycles is information-heavy: m
 
 - The account manager can read and correct everything in any editor.
 - Any model or harness can work on the same folder; switching costs a configuration file, not a migration.
-- git gives an audit trail for free: every skill run is one commit.
+- The audit trail needs no tool: every skill run writes a run-log line naming the records it changed, and every material change keeps the old value in History. A synced folder (e.g. OneDrive) adds file versions; git can be used but is not required.
 - Experienced sellers keep a personal working memory next to the company CRM. Making it explicit, structured and private is more honest than pretending it does not exist, and the proposal mechanism gives the CRM a cleaner path than the status quo.
 
 ## Why head and history

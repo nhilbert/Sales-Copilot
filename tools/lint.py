@@ -238,8 +238,14 @@ def lint_account(folder: Path, today: dt.date, rep: Report) -> None:
                     rep.warn(str(readme), f"settings lack '{key}'")
             budget = fm.get("reminder_budget")
 
-    inbox = [p.name for p in (folder / "inbox").glob("*") if p.name != ".gitkeep"] \
-        if (folder / "inbox").exists() else []
+    index = folder / "archive" / "INDEX.md"
+    listed = set()
+    if index.exists():
+        for line in index.read_text(encoding="utf-8").splitlines():
+            if " · " in line:
+                listed.add(line.split(" · ", 1)[1].strip())
+    inbox = [p.name for p in (folder / "inbox").glob("*")
+             if p.name != ".gitkeep" and p.name not in listed] if (folder / "inbox").exists() else []
     open_actions = sum(1 for rid, k, _ in records
                        if rid.startswith("A-") and k.get("status") in OPEN_STATES)
     open_props = sum(1 for rid, k, _ in records

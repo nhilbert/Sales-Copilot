@@ -17,10 +17,11 @@ The account memory is a folder of plain Markdown files. The assistant is a clerk
 | `debrief` | meeting notes + "debrief" | actions with IDs and dependencies, decisions, new people, value-proposition signals, public-source research |
 | `vp` | a client challenge | ranked value propositions from your library, with proof, gaps and product-alignment flags; drafts where nothing fits |
 | `rebase` | "a lot changed: …" | every open item re-dispositioned in one batch (keep, rewrite, superseded, park, done); episodes closed |
+| `new-account` | "new account: …" | an account folder created from the templates |
 
 ## Design in five rules
 
-1. **Files are the system.** One folder per account, Markdown with YAML front matter, one git repository. Any editor, any model.
+1. **Files are the system.** One folder per account, Markdown with YAML front matter. Any editor, any model, no installation.
 2. **Head and history.** Each file has `## Current` (what is true now) and an append-only `## History`. Reminders come only from Current.
 3. **Leases.** Actions, questions, signals and delivery items carry `review_by`. Expired items are not reminders; they are listed once for confirm, park or drop. A reminder budget caps every list.
 4. **Propose, don't act.** CRM updates, goal changes, merges and inferred people are proposals the account manager decides on.
@@ -28,31 +29,45 @@ The account memory is a folder of plain Markdown files. The assistant is a clerk
 
 Details: [CONVENTIONS.md](CONVENTIONS.md) (file format), [POLICY.md](POLICY.md) (hard rules), [docs/design.md](docs/design.md) (rationale).
 
-## Quick start
+## Viewer
 
-Requires Python 3.9+ and git.
+`Account-Desk-Viewer.html` (in every workspace; source in `viewer/`) is a single HTML file you open by double-click in Edge, Chrome, Safari or Firefox. It reads the workspace folder you choose and shows an overview per account: what needs a look, priorities, goals, a stakeholder map (influence × stance, coloured by how recent the last contact is), actions with dependencies and leases, a timeline across all files, value propositions, delivery and news, the raw files, and the shared value-proposition library.
+
+- Read-only: it never writes to the folder.
+- Offline: a content security policy blocks every network request; there are no external scripts or fonts.
+- Nothing is stored; closing the tab forgets everything. In Edge and Chrome, "Reload" re-reads the folder after a skill run; other browsers ask you to choose the folder again.
+- Presentation mode ("Show: team + crm" or "crm only") hides private entries, untagged content and raw files before you share your screen.
+
+![Viewer overview with the fictional demo account](docs/viewer-overview.png)
+
+## Setup without installing anything
+
+You need the Claude desktop app and a private folder (a OneDrive folder works well because it keeps file versions). No Python, no git.
+
+1. From the [latest release](https://github.com/nhilbert/Sales-Copilot/releases/latest) download:
+   - `sales-copilot-workspace.zip` (empty desk) or `sales-copilot-demo-workspace.zip` (fictional demo)
+   - `sales-copilot-skills.zip` (contains one zip per skill)
+2. Unzip the workspace into your private folder. Never put it into a shared or public location.
+3. In the Claude desktop app, upload each skill zip in the skill settings.
+4. Create a Project, paste the text from `PROJECT-INSTRUCTIONS.md` (in the workspace) into its instructions, and connect the workspace folder.
+5. Start a chat in the Project: "new account: Example Industries" — then drop material into it.
+
+Start every task in a new chat; the files carry the state. Each skill run leaves a line in the account's `README.md` History, so changes stay attributable without version control.
+
+**Updates:** download `sales-copilot-rules-update.zip` and unzip it over the workspace (it contains only rules, templates and skill copies, never accounts), and re-upload changed skill zips.
+
+## For maintainers (Python 3.9+, git optional)
 
 ```bash
-git clone https://github.com/nhilbert/Sales-Copilot.git
-cd Sales-Copilot
-
-# a private workspace OUTSIDE this repository
-python3 tools/desk.py init ~/AccountDesk
-python3 tools/desk.py new-account ~/AccountDesk example-co --name "Example Co"
-
-# or the fictional demo
+git clone https://github.com/nhilbert/Sales-Copilot.git && cd Sales-Copilot
+python3 tools/desk.py release              # builds all download zips into dist/
 python3 tools/desk.py demo ~/AccountDesk-demo
-
-# check a workspace
-python3 tools/lint.py ~/AccountDesk/accounts
+python3 tools/lint.py ~/AccountDesk-demo/accounts --today 2026-10-30
 ```
 
-The workspace gets copies of the rules, templates, linter and skills (`.claude/skills/`, `.agents/skills/`). `python3 tools/desk.py update <workspace>` refreshes them later without touching accounts.
+Publishing a GitHub release runs `.github/workflows/release.yml`, which lints the demo and attaches the zips to the release. `tools/lint.py` checks a workspace's format (the skills check themselves against CONVENTIONS §14 and do not need it).
 
-### Using it with Claude
-
-- **Claude desktop app**: connect the workspace folder. Install the skills from `python3 tools/desk.py package` (one zip per skill in `dist/`) via the app's skill settings. Start each task in a fresh chat; the files carry the state.
-- **Claude Code**: run `claude` inside the workspace. `CLAUDE.md`, the skills and `.claude/settings.json` (deny rules for policy files, `rm`, `curl`, `git push`) are picked up automatically.
+With **Claude Code**, run `claude` inside a workspace: `CLAUDE.md`, `.claude/skills/` and `.claude/settings.json` (deny rules for policy files, `rm`, `curl`, `git push`) are picked up automatically.
 
 ### Other harnesses
 

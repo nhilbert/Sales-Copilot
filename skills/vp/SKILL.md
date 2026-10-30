@@ -30,6 +30,7 @@ The account manager curates the library in `_shared/value-propositions/`. This s
 6. If no entry reaches 3, or the account manager asks: draft a new entry from `templates/shared/value-proposition-entry.md` as `_shared/value-propositions/VP-<slug>.md` with `status: draft`, every unknown written `unknown`, products only from product files. Say clearly that it is a draft.
 7. Search parked AVP- records and `used_at` lists for earlier use at other accounts; mention them ("used at <slug>: <outcome if recorded>").
 8. If an account is given, offer to add the chosen candidates as AVP- records with `status: candidate` — write only on confirmation.
+9. If you wrote anything: self-check (CONVENTIONS §14); add a History line to each draft entry; if an account is given, append the run log line to its `README.md` History.
 
 ## Check
 

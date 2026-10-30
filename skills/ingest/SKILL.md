@@ -45,13 +45,13 @@ Turns raw items in `accounts/<slug>/inbox/` into records and log entries, withou
    - `value-proposition.md` → History: one entry per client signal, prefixed `signal:` (need, objection, priority, competitor mention by the client).
    - Open episode: if the item concerns it, update the episode's Current (what is open, what is done) and add a History line.
    - `proposals.md`: `crm-update` for items the CRM would normally hold (opportunity stage, amounts, close dates, next meeting, contact role changes); `plan-change` if the item contradicts a goal, the client strategy or the README summary; never change goals or the README yourself. An open proposal that the item makes outdated may be rewritten (old text to History) instead of adding a second one.
-4. **Archive**: create `archive/<today>/` if needed, then move the item there unchanged (`git mv` if the workspace is a git repository). If moving is impossible, append the filename to `archive/INDEX.md`.
+4. **Archive**: create `archive/<today>/` if needed, then move the item there unchanged. If the file tools cannot move files, append `- <today> · <filename>` to `archive/INDEX.md` instead and leave the file in place.
 
 ## Finish
 
 1. Set `last_ingest: <today>` in `README.md`; update `updated:` in every changed file.
-2. Run `python3 tools/lint.py accounts/<slug>` if available; fix format errors you caused.
-3. Commit if git is available: `ingest: <slug> <n> items`.
+2. Append the run log line to `README.md` History (CONVENTIONS §13).
+3. Self-check (CONVENTIONS §14); fix what fails.
 
 ## Output to the account manager
 

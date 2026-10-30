@@ -2,7 +2,7 @@
 
 About 25 minutes. The demo workspace describes a fictional vendor, Larkspur Industrial Software, and a fictional client, Brenmoor Pumpenwerke. Reference date: **30 October 2026**. Tell the assistant this date at the start ("today is 2026-10-30"), because the data is set around it.
 
-Setup: `python3 tools/desk.py demo <private-folder>`, connect that folder in the assistant, install the skills (see README).
+Setup (no installation): unzip `sales-copilot-demo-workspace.zip` from the latest release into a private folder, connect that folder in the Claude desktop app, upload the seven skill zips. Start each step in a fresh chat.
 
 | # | Step | Say / do | What to show |
 | --- | --- | --- | --- |
@@ -14,7 +14,7 @@ Setup: `python3 tools/desk.py demo <private-folder>`, connect that folder in the
 | 5 | Debrief | paste `demo-inputs/debrief-notes-quality-review.md`, "debrief" | actions with IDs and owners, link to the renewal action, new name Marta Novak → research queue → confirm-stakeholder proposal, signal: competitor mention, plan question on mobile audits vs roadmap |
 | 6 | Prep | paste `demo-inputs/prep-request.md`, "prep me" | one page: Albrecht unknown (offer research), Brandner neutral with no contact since August, comparison method as objective, open items both ways |
 | 7 | Value proposition | paste `demo-inputs/vp-challenge.md`, "what could we offer" | VP-quality-closed-loop ranked first with score breakdown; VP-audit-readiness as draft; VP-erp-coexistence flagged `product?` (connector announced only) |
-| 8 | Audit trail | `git log --stat` in the workspace | every run is one commit; every change is attributable and revertible |
+| 8 | Audit trail | open `accounts/brenmoor/README.md`, scroll to History; open `actions.md` History | one run-log line per skill run, naming the records it changed; every material change keeps the old value; nothing was deleted |
 
 Closing points (evidence, not promises):
 
