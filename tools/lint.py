@@ -198,6 +198,8 @@ def check_records(records, ids, today: dt.date, rep: Report) -> list[str]:
         for key in DATE_KEYS & keys.keys():
             if keys[key] != "unknown" and parse_date(keys[key]) is None:
                 rep.err(where, f"{rid} {key} '{keys[key]}' is not an ISO date or 'unknown'")
+        if any(c in keys.get("src", "") for c in ";}"):
+            rep.err(where, f"{rid} src must not contain ';' or '}}'")
         if keys.get("src", "").startswith("inferred") and prefix != "P":
             rep.err(where, f"{rid} has src 'inferred' — inferences belong in proposals")
         if leased and status not in LEASE_EXEMPT:

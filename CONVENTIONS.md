@@ -124,17 +124,30 @@ IDs are unique within an account. The date in an ID is the date the record was c
 | --- | --- |
 | `vis` | `private` · `team` · `crm` |
 | `status` (A) | `open` · `waiting` · `done` · `parked` · `dropped` |
-| `status` (Q, N) | `open` / `watch` · `answered` / `acted` · `parked` · `dropped` |
+| `status` (Q) | `open` · `answered` · `parked` · `dropped` |
+| `status` (N) | `watch` · `acted` · `parked` · `dropped` |
 | `status` (G) | `on-track` · `at-risk` · `off-track` · `done` · `dropped` |
 | `status` (D) | `active` · `revisited` · `reversed` |
 | `status` (P) | `open` · `accepted` · `rejected` · `done` |
-| `status` (DL) | `green` · `amber` · `red` · `closed` |
+| `status` (AVP) | `candidate` · `active` · `retired` · `parked` · `dropped` |
+| `status` (DL) | `green` · `amber` · `red` · `closed` · `parked` |
 | `influence` | `high` · `medium` · `low` · `unknown` |
 | `stance` | `champion` · `supporter` · `neutral` · `sceptic` · `blocker` · `unknown` |
 | `buying_role` (optional on S) | `decision-maker` · `economic` · `technical` · `user` · `coach` · `gatekeeper` · `unknown` |
 | `kind` (P) | `crm-update` · `confirm-stakeholder` · `merge-actions` · `plan-change` · `priorities` · `vp-change` · `other` |
 
-Dates are ISO `YYYY-MM-DD`. A missing value is written `unknown`, never guessed.
+Optional keys are allowed (`note`, `progress`, `next`, `reports_to`, `episode`, …); keep them few and self-explanatory.
+
+### Material changes
+
+A change to the title, to any required key, or to `due`, `owner`, `depends_on` is material: the old value goes to History first (§3). Adding or updating an optional key needs only a History line.
+
+### Dates
+
+- Dates are ISO `YYYY-MM-DD`. A missing value is written `unknown`, never guessed.
+- Relative or incomplete dates ("next Friday", "in February", "last week") are resolved against the date of the item they appear in, only if the result is unambiguous; the original wording is kept: `- due: 2027-02-28` plus `- note: "February board meeting", mail 2026-10-29`. If ambiguous: `unknown`, and an open question or a "Needs you" line.
+- A log entry's date is the date of the event. If the event date is unknown, use the date written and add `(recorded)` after it.
+- Leases and default dates are computed from the date the record is written (normally today).
 
 ## 5. Log entries **[lint]**
 
@@ -145,6 +158,10 @@ A log entry is one list item under `## History` (or in `comm-log.md`):
 ```
 
 Format: date, then ` · `-separated fields, free text, and a tag block `{src: …; vis: …}` at the end. In `comm-log.md` the fields are: date · direction (`in`/`out`/`both`) · channel (`mail`, `meeting`, `call`, `chat`, `doc`, `event`) · stakeholder IDs · summary.
+
+`comm-log.md` holds communication between our side and the client only. Internal mails, status reports from colleagues and items forwarded to oneself are not logged there; their content goes into the records it concerns, with their own `src`.
+
+A person's `last_contact` changes only when they took part in a communication (sender, recipient, attendee, caller) — not when they are merely mentioned.
 
 ## 6. Source tags
 
@@ -160,6 +177,8 @@ Format: date, then ` · `-separated fields, free text, and a tag block `{src: �
 | `crm <module>/<record>` | a CRM export or view |
 | `me 2026-10-28` | the account manager's own statement |
 | `inferred <from what>` | a conclusion, not a fact; only allowed in proposals and flagged as such |
+
+A `src` value never contains `;` or `}` (they end the tag block). A mail forwarded or saved as a note keeps the original mail as source: `mail <date> <from→to>`, not `doc`.
 
 The archive path of the item is appended when available: `{src: mail 2026-10-28 Meyer→me, archive/2026-10-29/mail-meyer.eml; vis: private}`.
 
