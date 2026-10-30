@@ -92,3 +92,6 @@ All persons are fictional.
 - 2026-10-01 · S-lindgren · questioned custom interface in pilot steering; prefers integration platform {src: meeting 2026-10-01 pilot steering; vis: private}
 - 2026-08-19 · S-brandner · IT alignment; neutral, asked for integration roadmap {src: meeting 2026-08-19 IT alignment; vis: private}
 - 2026-07-03 · S-fink · asked for price list for renewal {src: mail 2026-07-03 Fink→me; vis: private}
+- 2026-06-30 · S-kessler · quality review; interested in closing the loop between deviations and production {src: meeting 2026-06-30 quality review; vis: private}
+- 2026-06-12 · S-vogel · strategy talk; sponsor for standardisation {src: meeting 2026-06-12 strategy talk COO; vis: private}
+- 2026-05-20 · S-oyelaran · first contact at user group {src: event 2026-05-20 user group; vis: private}

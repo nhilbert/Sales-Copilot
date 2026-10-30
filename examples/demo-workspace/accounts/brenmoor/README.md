@@ -24,3 +24,5 @@ Fictional mid-size pump manufacturer with three plants (North, South, East). Any
 - 2026-10-20 · run: drop · 1 item · changed S-oyelaran, DL-pilot-north, comm-log {src: me 2026-10-20; vis: private}
 - 2026-10-09 · run: review · changed priorities, G-3, A-20261009-01, A-20261009-02 {src: me 2026-10-09; vis: private}
 - 2026-10-09 · summary refreshed by review {src: me 2026-10-09; vis: private}
+- 2026-09-15 · run: review · changed G-3, priorities {src: me 2026-09-15; vis: private}
+- 2026-08-29 · run: rebase · pilot approved · 4 superseded, 2 parked, episode E-202606-discovery closed {src: me 2026-08-29; vis: private}

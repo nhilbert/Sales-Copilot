@@ -11,7 +11,7 @@ challenge_patterns:
 products: [larkspur-mes]
 buyer_roles: [economic, decision-maker, technical]
 segments: [discrete manufacturing, 3+ plants]
-used_at: [brenmoor]
+used_at: [brenmoor, halvorsen]
 proof:
   - "Pilot plant North (fictional): template configured in 9 weeks; results pending — src: delivery report 2026-10-27"
 src: me 2026-09-15
