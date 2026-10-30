@@ -1,0 +1,2 @@
+What changed (account manager's statement):
+The board moved the MES decision to February and made it a group-standard decision for all plants, including the planned fourth plant. Jonas Albrecht, the new Head of Digital Transformation, leads the evaluation. The board wants a total-cost comparison against the ERP vendor's MES module. The pilot at Plant North counts as finished once the interface fix is live on 8 November; remaining configuration items are delivery's business, not mine. Purchasing will probably run a formal tender in January.
