@@ -68,3 +68,5 @@ Brenmoor wants comparable processes across its three plants before adding a four
 - 2026-10-09 · G-3 status on-track → at-risk: no contact with CIO since August {src: me 2026-10-09; vis: private}
 - 2026-09-08 · episode E-202609-pilot-north opened {src: me 2026-09-08; vis: private}
 - 2026-09-01 · goals G-1 to G-4 set {src: me 2026-09-01; vis: private}
+- 2026-08-29 · episode E-202606-discovery closed. Purpose: understand the plants and find a pilot. Result: COO sponsors a pilot at Plant North. Carried forward: G-1, G-4, pilot scope. Dropped: paperless-only pitch (VP retired). Open risk: IT prefers fewer vendors. {src: me 2026-08-29; vis: private}
+- 2026-06-12 · episode E-202606-discovery opened after strategy talk {src: meeting 2026-06-12 strategy talk COO; vis: private}
