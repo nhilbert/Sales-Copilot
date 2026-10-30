@@ -1,0 +1,35 @@
+# Sales Copilot is a public repository of generic skills and templates.
+# Real account data must NEVER be committed here. It lives in a private
+# workspace created outside this repository (see tools/new_workspace.py).
+# The rules below are a safety net, not the primary control.
+
+# Private workspaces and account data anywhere in the tree
+workspace/
+workspaces/
+accounts/
+!examples/**/accounts/
+inbox/
+!examples/**/inbox/
+archive/
+!examples/**/archive/
+
+# Mail and office exports that tend to carry real data
+*.eml
+*.msg
+*.pst
+*.ics
+*.vcf
+*.csv
+!examples/**/*.eml
+!examples/**/*.csv
+
+# Build output
+dist/
+__pycache__/
+*.pyc
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
